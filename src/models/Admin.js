@@ -19,16 +19,16 @@ const adminSchema = new mongoose.Schema({
 });
 
 // Action automatique AVANT de sauvegarder dans la base de donnees
-adminSchema.pre('save', async function(next) {
-  // Si le mot de passe n'a pas ete modifie, on passe a la suite
+// CORRECTION : On retire 'next' car c'est une fonction 'async'
+adminSchema.pre('save', async function() {
+  // Si le mot de passe n'a pas ete modifie, on arrete la fonction ici (return)
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
   
   // On crypte le mot de passe avec une force de 10 (Salt)
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Methode pour verifier le mot de passe lors de la connexion
