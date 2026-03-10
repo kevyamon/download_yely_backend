@@ -34,8 +34,7 @@ const loginAdmin = async (req, res) => {
 // 🔒 ROUTE D'INSTALLATION ULTRA-SÉCURISÉE
 const setupInitialAdmin = async (req, res) => {
   try {
-    // 1. VÉRIFICATION DU CADENAS D'USINE (Nouveau !)
-    // On attend une clé secrète dans les headers de la requête
+    // 1. VÉRIFICATION DU CADENAS D'USINE
     const setupToken = req.headers['x-setup-key'];
     const expectedToken = process.env.SYSTEM_INIT_KEY || 'yely_master_install_key_2026';
 
@@ -44,13 +43,13 @@ const setupInitialAdmin = async (req, res) => {
       return res.status(403).json({ message: "Accès refusé. Clé d'amorçage système manquante ou invalide." });
     }
 
-    // 2. VÉRIFICATION ANTI-DOUBLON (Auto-destruction)
+    // 2. VÉRIFICATION ANTI-DOUBLON
     const adminCount = await Admin.countDocuments();
     if (adminCount > 0) {
       return res.status(403).json({ message: "L'installation initiale est deja terminee. Verrouillage actif." });
     }
 
-    // 3. CRÉATION SI TOUT EST SÉCURISÉ
+    // 3. CRÉATION
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ message: "Veuillez fournir un email et un mot de passe." });
@@ -62,11 +61,12 @@ const setupInitialAdmin = async (req, res) => {
       message: "Premier administrateur cree avec succes. Le systeme est maintenant verrouillé.",
       email: admin.email
     });
- } catch (error) {
-    console.error("ERREUR DÉTAILLÉE CRÉATION ADMIN:", error); // Ça va l'écrire dans ton terminal
+  } catch (error) {
+    // 🚨 LE DÉTECTEUR DE MENSONGES EST ICI 🚨
+    console.error("🔥 ERREUR CRITIQUE LORS DE LA CRÉATION :", error);
     res.status(500).json({ 
-      message: "Erreur lors de l'installation initiale.", 
-      details: error.message // Ça va l'envoyer à ton React pour que tu puisses voir le problème !
+      message: "Erreur lors de l'installation initiale.",
+      details: error.message // On renvoie la vraie cause de l'erreur !
     });
   }
 };
