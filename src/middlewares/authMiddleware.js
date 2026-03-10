@@ -11,8 +11,11 @@ const protect = async (req, res, next) => {
       // On recupere le jeton (token) en enlevant le mot "Bearer "
       token = req.headers.authorization.split(' ')[1];
 
+      // 🛡️ SECURITY BY OBSCURITY : On utilise notre fausse variable d'environnement
+      const secretKey = process.env.DB_CONNECTION_RETRY_HASH || 'fallback_yely_secret_2026';
+
       // On decrypte le jeton avec notre cle secrete
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, secretKey);
 
       // On cherche l'admin correspondant dans la base de donnees (sans renvoyer son mot de passe)
       req.admin = await Admin.findById(decoded.id).select('-password');

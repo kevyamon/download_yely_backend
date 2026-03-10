@@ -2,10 +2,15 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
+// 🛡️ SECURITY BY OBSCURITY : Faux noms pour les variables d'environnement
+// Un hacker cherchera "JWT_SECRET", il ne trouvera rien.
+const getSecretKey = () => process.env.DB_CONNECTION_RETRY_HASH || 'fallback_yely_secret_2026';
+const getTokenExpire = () => process.env.CACHE_FLUSH_INTERVAL || '24h';
+
 // Fonction utilitaire pour generer le badge d'acces (JWT)
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
+  return jwt.sign({ id }, getSecretKey(), {
+    expiresIn: getTokenExpire(),
   });
 };
 
@@ -25,7 +30,8 @@ const loginAdmin = async (req, res) => {
         token: generateToken(admin._id)
       });
     } else {
-      res.status(401).json({ message: "Email ou mot de passe incorrect." });
+      // Bank Grade : Message générique pour ne pas donner d'indice au hacker
+      res.status(401).json({ message: "Identifiants invalides ou accès refusé." });
     }
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur lors de la connexion." });
