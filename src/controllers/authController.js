@@ -62,8 +62,12 @@ const setupInitialAdmin = async (req, res) => {
       message: "Premier administrateur cree avec succes. Le systeme est maintenant verrouillé.",
       email: admin.email
     });
-  } catch (error) {
-    res.status(500).json({ message: "Erreur lors de l'installation initiale." });
+ } catch (error) {
+    console.error("ERREUR DÉTAILLÉE CRÉATION ADMIN:", error); // Ça va l'écrire dans ton terminal
+    res.status(500).json({ 
+      message: "Erreur lors de l'installation initiale.", 
+      details: error.message // Ça va l'envoyer à ton React pour que tu puisses voir le problème !
+    });
   }
 };
 
