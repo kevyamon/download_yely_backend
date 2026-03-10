@@ -1,5 +1,6 @@
 // src/controllers/founderController.js
 const Founder = require('../models/Founder');
+const { getIo } = require('../config/socket');
 
 // Lire tous les fondateurs (Public, pour la page d'accueil)
 const getFounders = async (req, res) => {
@@ -16,6 +17,10 @@ const createFounder = async (req, res) => {
   try {
     const { name, role, story, imageFilename, displayOrder } = req.body;
     const founder = await Founder.create({ name, role, story, imageFilename, displayOrder });
+    
+    // TEMPS REEL : On signale une nouveaute sur les fondateurs
+    getIo().emit('founders_updated');
+    
     res.status(201).json(founder);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la creation du fondateur." });
@@ -27,6 +32,10 @@ const updateFounder = async (req, res) => {
   try {
     const founder = await Founder.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!founder) return res.status(404).json({ message: "Fondateur introuvable." });
+    
+    // TEMPS REEL : On signale une modification sur les fondateurs
+    getIo().emit('founders_updated');
+    
     res.status(200).json(founder);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la modification." });
@@ -38,6 +47,10 @@ const deleteFounder = async (req, res) => {
   try {
     const founder = await Founder.findByIdAndDelete(req.params.id);
     if (!founder) return res.status(404).json({ message: "Fondateur introuvable." });
+    
+    // TEMPS REEL : On signale une suppression sur les fondateurs
+    getIo().emit('founders_updated');
+    
     res.status(200).json({ message: "Fondateur supprime avec succes." });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la suppression." });

@@ -1,5 +1,6 @@
 // src/controllers/statController.js
 const Stat = require('../models/Stat');
+const { getIo } = require('../config/socket'); // Import de notre megaphone
 
 // Fonction intelligente : Si le tableau de bord des stats n'existe pas encore, elle le cree.
 const getOrCreateStatDocument = async () => {
@@ -16,6 +17,10 @@ const incrementAndroidClick = async (req, res) => {
     const stat = await getOrCreateStatDocument();
     stat.androidClicks += 1;
     await stat.save();
+    
+    // TEMPS REEL : On envoie les nouvelles stats directes a ton Dashboard Admin
+    getIo().emit('stats_updated', stat);
+    
     res.status(200).json({ message: "Clic Android enregistre." });
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur." });
@@ -28,18 +33,26 @@ const incrementIosClick = async (req, res) => {
     const stat = await getOrCreateStatDocument();
     stat.iosClicks += 1;
     await stat.save();
+    
+    // TEMPS REEL : On envoie les nouvelles stats directes a ton Dashboard Admin
+    getIo().emit('stats_updated', stat);
+    
     res.status(200).json({ message: "Clic iOS enregistre." });
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
 
-// Ajouter +1 au compteur de visiteurs (quand on ouvre la page)
+// Ajouter +1 au compteur de visiteurs
 const incrementVisitor = async (req, res) => {
   try {
     const stat = await getOrCreateStatDocument();
     stat.visitorsCount += 1;
     await stat.save();
+    
+    // TEMPS REEL : On envoie les nouvelles stats directes a ton Dashboard Admin
+    getIo().emit('stats_updated', stat);
+    
     res.status(200).json({ message: "Visiteur enregistre." });
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur." });

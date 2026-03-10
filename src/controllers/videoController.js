@@ -1,5 +1,6 @@
 // src/controllers/videoController.js
 const Video = require('../models/Video');
+const { getIo } = require('../config/socket');
 
 // Lire uniquement les videos actives (Public)
 const getActiveVideos = async (req, res) => {
@@ -26,6 +27,10 @@ const createVideo = async (req, res) => {
   try {
     const { title, description, videoUrl, isActive, displayOrder } = req.body;
     const video = await Video.create({ title, description, videoUrl, isActive, displayOrder });
+    
+    // TEMPS REEL : On signale une nouvelle video
+    getIo().emit('videos_updated');
+    
     res.status(201).json(video);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de l'ajout de la video." });
@@ -37,6 +42,10 @@ const updateVideo = async (req, res) => {
   try {
     const video = await Video.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!video) return res.status(404).json({ message: "Video introuvable." });
+    
+    // TEMPS REEL : On signale une modification de video
+    getIo().emit('videos_updated');
+    
     res.status(200).json(video);
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la modification." });
@@ -48,6 +57,10 @@ const deleteVideo = async (req, res) => {
   try {
     const video = await Video.findByIdAndDelete(req.params.id);
     if (!video) return res.status(404).json({ message: "Video introuvable." });
+    
+    // TEMPS REEL : On signale une suppression de video
+    getIo().emit('videos_updated');
+    
     res.status(200).json({ message: "Video supprimee avec succes." });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la suppression." });
