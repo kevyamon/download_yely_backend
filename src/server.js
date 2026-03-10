@@ -14,6 +14,7 @@ const contactRoutes = require('./routes/contactRoutes');
 const statRoutes = require('./routes/statRoutes');
 const founderRoutes = require('./routes/founderRoutes');
 const videoRoutes = require('./routes/videoRoutes');
+const configRoutes = require('./routes/configRoutes'); // <-- NOUVELLE ROUTE CONFIG
 
 // Chargement des variables d'environnement
 dotenv.config();
@@ -36,14 +37,18 @@ app.use(cors());
 app.use(express.json()); 
 app.use(morgan('dev')); 
 
+// Réponse pour le robot de Render (Contrôle de santé pour éviter les 404 dans les logs)
+app.get('/', (req, res) => res.status(200).send('API Yely Bank Grade Opérationnelle.'));
+
 // Routage API
 app.use('/api/auth', authRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/stats', statRoutes);
 app.use('/api/founders', founderRoutes);
 app.use('/api/videos', videoRoutes);
+app.use('/api/config', configRoutes); // <-- BRANCHE DU NOUVEAU CONTROLEUR
 
-// Route de verification de sante (Healthcheck)
+// Route de verification de sante specifique (Healthcheck)
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     statut: 'Operationnel',
