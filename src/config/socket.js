@@ -4,28 +4,29 @@ const { Server } = require('socket.io');
 let io;
 
 const initSocket = (server) => {
+  // 🛡️ VERROUILLAGE CORS POUR LES SOCKETS 🛡️
+  const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+
   io = new Server(server, {
     cors: {
-      origin: '*', // En production, on restreindra cela a l'URL de ta Download Page
-      methods: ['GET', 'POST', 'PUT', 'DELETE']
+      origin: allowedOrigin,
+      methods: ["GET", "POST"],
+      credentials: true
     }
   });
 
   io.on('connection', (socket) => {
-    console.log(`[Socket] Nouvel appareil connecte : ${socket.id}`);
+    console.log(`[Socket] Nouveau client connecté: ${socket.id}`);
 
     socket.on('disconnect', () => {
-      console.log(`[Socket] Appareil deconnecte : ${socket.id}`);
+      console.log(`[Socket] Client déconnecté: ${socket.id}`);
     });
   });
-
-  return io;
 };
 
-// Fonction utilitaire pour recuperer l'instance Socket n'importe ou dans le code
 const getIo = () => {
   if (!io) {
-    throw new Error('Socket.io n\'a pas ete initialise !');
+    throw new Error("Socket.io n'a pas été initialisé !");
   }
   return io;
 };
