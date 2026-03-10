@@ -2,27 +2,21 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
-// 🛡️ SECURITY BY OBSCURITY : Faux noms pour les variables d'environnement
-// Un hacker cherchera "JWT_SECRET", il ne trouvera rien.
+// 🛡️ SECURITY BY OBSCURITY
 const getSecretKey = () => process.env.DB_CONNECTION_RETRY_HASH || 'fallback_yely_secret_2026';
 const getTokenExpire = () => process.env.CACHE_FLUSH_INTERVAL || '24h';
 
-// Fonction utilitaire pour generer le badge d'acces (JWT)
 const generateToken = (id) => {
   return jwt.sign({ id }, getSecretKey(), {
     expiresIn: getTokenExpire(),
   });
 };
 
-// Connexion de l'administrateur
 const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // 1. On cherche l'admin par son email
     const admin = await Admin.findOne({ email });
 
-    // 2. On verifie si l'admin existe ET si le mot de passe est correct
     if (admin && (await admin.matchPassword(password))) {
       res.status(200).json({
         _id: admin._id,
@@ -30,7 +24,6 @@ const loginAdmin = async (req, res) => {
         token: generateToken(admin._id)
       });
     } else {
-      // Bank Grade : Message générique pour ne pas donner d'indice au hacker
       res.status(401).json({ message: "Identifiants invalides ou accès refusé." });
     }
   } catch (error) {
@@ -38,29 +31,35 @@ const loginAdmin = async (req, res) => {
   }
 };
 
-// Creation du tout premier administrateur (Toi)
-// Cette route se bloquera definitivement des qu'un admin existera
+// 🔒 ROUTE D'INSTALLATION ULTRA-SÉCURISÉE
 const setupInitialAdmin = async (req, res) => {
   try {
-    const adminCount = await Admin.countDocuments();
-    
-    if (adminCount > 0) {
-      return res.status(403).json({ message: "L'installation initiale est deja terminee. Un administrateur existe deja." });
+    // 1. VÉRIFICATION DU CADENAS D'USINE (Nouveau !)
+    // On attend une clé secrète dans les headers de la requête
+    const setupToken = req.headers['x-setup-key'];
+    const expectedToken = process.env.SYSTEM_INIT_KEY || 'yely_master_install_key_2026';
+
+    if (setupToken !== expectedToken) {
+      console.warn("⚠️ Tentative d'installation non autorisée bloquée !");
+      return res.status(403).json({ message: "Accès refusé. Clé d'amorçage système manquante ou invalide." });
     }
 
-    const { email, password } = req.body;
+    // 2. VÉRIFICATION ANTI-DOUBLON (Auto-destruction)
+    const adminCount = await Admin.countDocuments();
+    if (adminCount > 0) {
+      return res.status(403).json({ message: "L'installation initiale est deja terminee. Verrouillage actif." });
+    }
 
+    // 3. CRÉATION SI TOUT EST SÉCURISÉ
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ message: "Veuillez fournir un email et un mot de passe." });
     }
 
-    const admin = await Admin.create({
-      email,
-      password
-    });
+    const admin = await Admin.create({ email, password });
 
     res.status(201).json({
-      message: "Premier administrateur cree avec succes. Vous pouvez maintenant vous connecter.",
+      message: "Premier administrateur cree avec succes. Le systeme est maintenant verrouillé.",
       email: admin.email
     });
   } catch (error) {
