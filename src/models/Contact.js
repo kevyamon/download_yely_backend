@@ -14,7 +14,7 @@ const contactSchema = new mongoose.Schema({
   },
   iconName: {
     type: String,
-    required: true,
+    required: false, // Mis à false pour ne pas bloquer le Dashboard
     default: 'link-outline'
   },
   isActive: {

@@ -12,13 +12,13 @@ const founderSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  story: {
+  description: { // Changé de 'story' à 'description' pour correspondre au Dashboard
     type: String,
     required: true
   },
-  imageFilename: {
+  imageUrl: { // Changé de 'imageFilename' à 'imageUrl'
     type: String,
-    required: true
+    required: false // Optionnel car on a un placeholder en cas d'absence
   },
   displayOrder: {
     type: Number,
