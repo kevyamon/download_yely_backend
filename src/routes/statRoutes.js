@@ -1,7 +1,7 @@
 // src/routes/statRoutes.js
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middlewares/authMiddleware');
+
 const { 
   incrementAndroidClick, 
   incrementIosClick, 
@@ -9,12 +9,12 @@ const {
   getStats 
 } = require('../controllers/statController');
 
-// 🟢 Portes Publiques (Le site web Frontend cliquera sur ces liens de maniere invisible)
+// Portes Publiques (Le site web Frontend cliquera sur ces liens de maniere invisible)
 router.post('/android', incrementAndroidClick);
 router.post('/ios', incrementIosClick);
 router.post('/visitor', incrementVisitor);
 
-// 🔴 Porte Privee (Toi seul a le droit de lire le total des stats)
-router.get('/', protect, getStats);
+// Porte Publique (Autorise le Frontend a lire le total des stats pour l'affichage)
+router.get('/', getStats);
 
 module.exports = router;
