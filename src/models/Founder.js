@@ -1,3 +1,4 @@
+// src/models/Founder.js
 const mongoose = require('mongoose');
 
 const founderSchema = new mongoose.Schema({
@@ -11,28 +12,22 @@ const founderSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  description: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  imageUrl: {
+  description: { // Changé de 'story' à 'description' pour correspondre au Dashboard
     type: String,
     required: true
   },
-  socialLinks: {
-    twitter: String,
-    linkedin: String,
-    facebook: String
+  imageUrl: { // Changé de 'imageFilename' à 'imageUrl'
+    type: String,
+    required: false // Optionnel car on a un placeholder en cas d'absence
   },
-  order: {
+  displayOrder: {
     type: Number,
     default: 0
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('Founder', founderSchema);
+const Founder = mongoose.model('Founder', founderSchema);
+
+module.exports = Founder;
