@@ -1,37 +1,50 @@
-// src/controllers/configController.js
 const AppConfig = require('../models/AppConfig');
 
 const getConfig = async (req, res) => {
   try {
     let config = await AppConfig.findOne();
-    // Si la configuration n'existe pas encore, on la crée vide
     if (!config) {
-      config = await AppConfig.create({}); 
+      config = await AppConfig.create({});
     }
-    res.status(200).json(config);
+    res.json(config);
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la récupération de la configuration." });
+    res.status(500).json({ message: 'Erreur lors de la récupération de la configuration' });
   }
 };
 
 const updateConfig = async (req, res) => {
   try {
-    const { apkUrl, pwaUrl, androidVersion, iosVersion } = req.body;
+    const { androidLink, iosLink, downloadCount, appScreenshots } = req.body;
+    
     let config = await AppConfig.findOne();
     
     if (!config) {
-      config = await AppConfig.create(req.body);
+      config = new AppConfig({
+        androidLink,
+        iosLink,
+        downloadCount,
+        appScreenshots
+      });
     } else {
-      if (apkUrl !== undefined) config.apkUrl = apkUrl;
-      if (pwaUrl !== undefined) config.pwaUrl = pwaUrl;
-      if (androidVersion) config.androidVersion = androidVersion;
-      if (iosVersion) config.iosVersion = iosVersion;
-      await config.save();
+      config.androidLink = androidLink ?? config.androidLink;
+      config.iosLink = iosLink ?? config.iosLink;
+      config.downloadCount = downloadCount ?? config.downloadCount;
+      config.appScreenshots = appScreenshots ?? config.appScreenshots;
     }
-    res.status(200).json(config);
+
+    await config.save();
+    
+    if (req.app.get('io')) {
+      req.app.get('io').emit('configUpdated', config);
+    }
+
+    res.json(config);
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la mise à jour de la configuration." });
+    res.status(500).json({ message: 'Erreur lors de la mise à jour de la configuration' });
   }
 };
 
-module.exports = { getConfig, updateConfig };
+module.exports = {
+  getConfig,
+  updateConfig
+};
